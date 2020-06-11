@@ -1,0 +1,115 @@
+<html>
+   <head>
+      <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" type="image/png" href="logo.png">
+      <link rel="stylesheet" type="text/css" href="example.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js" ></script>
+      <link href="http://www.cssscript.com/wp-includes/css/sticky.css" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous" />
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+   </head>
+   <body ng-app="myApp" ng-controller="historyCtrl">
+
+<div class="wrapper">
+         <!-- Sidebar  -->
+         <nav id="sidebar">
+            <div class="sidebar-header">
+               <img src="images/logo.png" style="width: 90%">
+               <strong>EBS</strong>
+            </div>
+            <ul class="list-unstyled components">
+               <li>
+                  <a ng-href="index.html">
+                  <i class="fas fa-home"></i>
+                  Home
+                  </a>
+               </li>
+               <li>
+                  <a>
+                  <i class="fas fa-clock"></i>
+                  History
+                  </a>
+               </li>
+            </ul>
+         </nav>
+
+         <!-- Page Content  -->
+         <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+               <div class="container-fluid">
+                  <button ng-click="toggleSidebar()" type="button" id="sidebarCollapse" class="btn btn-primary">
+                  <i class="fas fa-align-left"></i>
+                  </button>
+               </div>
+            </nav>
+            <div class="row">
+              <div class="col-md-6">
+                <h3>Notifications</h3>
+                <!-- <div >
+                </div> -->
+                <!-- <div ng-repeat="notif in notificationsArray| orderBy : '-timestamp'" class="notification-card">
+                  {{notif.deviceId}} - {{notif.sensor.sensor}} detected at {{timeConverter(notif.timestamp)}}
+                  <button class="btn btn-primary"><a ng-href="{{generateImagesLink(notif.sensor)}}" target="_blank">VIEW</a></button>
+                </div> -->
+
+                <div class="card" ng-repeat="notif in notificationsArray| orderBy : '-timestamp'">
+                  <div class="card-body">
+                    <div class="container">
+                    <div class="row">
+                      <div class="col-2" style="padding: 0px!important">
+                        <!-- <img ng-if="notif.sensor.sensor != 'BUTTON'" src="https://img.icons8.com/color/48/000000/siren.png"> -->
+                        <img ng-if="notif.sensor.sensor == 'BUTTON'"
+                             src="https://img.icons8.com/color/48/000000/one-finger.png">
+
+                        <img ng-if="notif.sensor.sensor == 'PIR'"
+                             src="https://img.icons8.com/color/48/000000/running.png">
+
+                        <img ng-if="notif.sensor.sensor == 'DOOR'"
+                        src="https://img.icons8.com/officel/40/000000/door-opened.png">
+                      </div>
+                      <div class="col-10">
+                        <h5 class="card-title">Device - {{notif.deviceId}}</h5>
+                        <p class="card-text">{{notif.sensor.sensor}} detected at {{timeConverter(notif.timestamp)}}</p>
+                        <a ng-href="{{generateImagesLink(notif.sensor)}}" target="_blank" class="btn btn-primary">View Snapshots</a>
+                      </div>
+                    </div>
+                    </div>
+
+                                      
+                    
+                  </div>
+                </div>
+
+              </div>
+              <!-- <div class="col-md-6">
+                <div class="no-notif-div" id="no-notif-div">
+                  <div><i class="fas fa-bell"></i></div>
+                  <div>All Good! No new notifications.</div>
+                </div>
+                <div class="notif-div" id="notif-div">
+                  <h3>Notifications!</h3>
+                  <div id="notificationDiv" class="notificationDiv"></div>
+                </div>
+              </div> -->
+            </div>
+            
+            
+         </div>
+         <button ng-click="openAddDeviceModal()" class="btn btn-circle btn-circle-lg m-1 pos-fix"><i class="fa fa-plus"></i></button>
+
+      </div>
+
+      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<!--       <script src="aws-cognito-sdk.min.js"></script>
+      <script src="amazon-cognito-identity.min.js"></script>
+      <script src="cognito-auth.js"></script>
+      <script src="aws-iot-sdk-browser-bundle.js"></script>
+      <script src="bundle.js"></script> -->
+      <script src="date.js"></script>
+      <script src="history-controller.js"></script>
+
+   </body>
+</html>

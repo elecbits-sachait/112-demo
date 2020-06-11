@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.689.0/aws-sdk.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<head>
+	<title></title>
+</head>
+<body ng-app="myApp" ng-controller="myCtrl" ng-init="viewAlbum(notificationId); viewVideo(notificationId); getTextEvidence(notificationId)">
+	<div class="container text-center">
+		<h2>Upload Evidence</h3><br><br>
+		<div class="d-flex row justify-content-around">
+			<div class="col-md-4">
+				<h4>Upload Image</h4><br>
+					<div>
+                        <div >
+                            <div>Choose a file and click Upload</div><br>                  
+                            <input id="photoupload" type="file" accept="image/*"><br><br>
+                            <button class="btn btn-outline-success" id="addphoto" ng-click="addPhoto(notificationId)">
+                            Upload
+                            </button>&nbsp;&nbsp;  {{uploadProgress}}                             
+                        </div> 
+
+                        <div ng-repeat="photo in photos">
+                            <img width="55%" src="{{photo.photoUrl}}"><br><br>
+                            <button class="btn btn-outline-danger" ng-click="deletePhoto(notificationId, photo.photoKey)">Delete Image</button>
+                        </div>
+                    </div>
+			</div><br><br>
+
+			<div class="col-md-4">
+				<h4>Upload Video</h4><br>
+						<div ng-if="showVideoUploadOption">
+                            <div>Choose a file and click Upload</div><br>    
+                            <input id="videoupload" type="file" accept="video/mp4,video/x-m4v,video/*"><br><br>
+                            <button class="btn btn-outline-success" id="addVideo" ng-click="addVideo(notificationId)">
+                            Upload
+                            </button>  &nbsp;&nbsp;{{videoUploadProgress}}                          
+                        </div>
+
+                        <div ng-repeat="video in videos">
+                            Current Video: {{video.videoKey.split('/').pop()}}<br><br>
+                            <button class="btn btn-outline-danger" ng-click="deleteVideo(notificationId, video.videoKey)">Delete Video</button>
+                        </div>
+			</div><br><br>
+
+			<div class="col-md-4">
+				<h4>Upload Text</h4><br>
+				<div>
+					<textarea ng-model="evidenceText" rows="6" style="width: 100%" placeholder="Submit relevant data like appearance/model/number of vehicle used or direction they have headed towards or appearance of accused persons"></textarea><br>
+					<button class="btn btn-outline-success" ng-click="submitTextEvidence(evidenceText, notificationId)">Upload</button>
+				</div>
+			</div>		
+		</div>
+	</div>
+hi there
+{{notificationId}}
+</body>
+
+
+<script>
+var app = angular.module('myApp', []);
+var bucketName = 'notification-evidence'
+var bucketRegion = "ap-south-1";
+var IdentityPoolId = "ap-south-1:3d21358e-2115-4955-9421-336ab1ad6898";
+
+app.controller('myCtrl', function($scope, $http) {
+    AWS.config.update({
+        region: bucketRegion,
+        credentials: new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: IdentityPoolId
+        })
+    });
+
+    var s3 = new AWS.S3({
+        params: {
+            Bucket: bucketName
+        }
+    });
+
+    $scope.addPhoto = function(photoFolderName) {
+        var files = document.getElementById("photoupload").files;
+        if (!files.length) {
+            return alert("Please choose a file to upload first.");
+        }
+        var file = files[0];
+        var fileName = file.name;
+        var albumPhotosKey = encodeURIComponent(photoFolderName) + "/images/";
+
+        var photoKey = albumPhotosKey + fileName;
+        console.log('photoKey: ', photoKey);
+
+        // Use S3 ManagedUpload class as it supports multipart uploads
+        var upload = new AWS.S3.ManagedUpload({
+            params: {
+                Bucket: bucketName,
+                Key: photoKey,
+                Body: file,
+                ACL: "public-read"
+            }
+        });
+
+        $scope.uploadProgress = '0';
+
+        upload.on('httpUploadProgress', (event) => {
+          console.log(event.loaded * 100 / event.total);
+            $scope.$apply(function() {
+                $scope.uploadProgress = (event.loaded * 100 / event.total)+'%' ;
+            });
+        });
+
+        var promise = upload.promise();
+
+        promise.then(
+            function(data) {
+                alert("Successfully uploaded photo.");
+                
+                $scope.viewAlbum($scope.notificationId);
+                //viewAlbum(albumName);
+            },
+            function(err) {
+                return alert("There was an error uploading your photo: ", err.message);
+            }
+        );
+    }
+
+    $scope.viewAlbum = function(photoFolderName) {
+        //$scope.showImageUploadOption = true;
+        $scope.uploadProgress = '';
+        console.log('view album called');
+        var albumPhotosKey = encodeURIComponent($scope.notificationId) + "/images/";
+        s3.listObjects({
+            Prefix: albumPhotosKey
+        }, function(err, data) {
+            if (err) {
+                return alert("There was an error viewing your album: " + err.message);
+            }
+            // 'this' references the AWS.Response instance that represents the response
+            var href = this.request.httpRequest.endpoint.href;
+            var bucketUrl = href + bucketName + "/";
+
+            var photos = data.Contents.map(function(photo) {
+                var photoKey = photo.Key;
+                var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+                console.log('photoKey: ', photoKey);
+                return {
+                    'photoUrl': photoUrl+'?' + new Date().getTime(),
+                    'photoKey': photoKey
+                };
+            });
+
+            $scope.$apply(function() {
+                $scope.photos = photos;
+                console.log('photos: ', $scope.photos);
+                if ($scope.photos.length) {
+                    //$scope.showImageUploadOption = false;
+                }
+            });
+
+
+        });
+    }
+
+    $scope.deletePhoto = function(photoFolderName, photoKey) {
+        //var photoKey = encodeURIComponent(albumName) + "//" + fileName;
+        s3.deleteObject({
+            Key: photoKey
+        }, function(err, data) {
+            if (err) {
+                return alert("There was an error deleting your photo: ", err.message);
+            }
+            alert("Successfully deleted photo.");
+            $scope.uploadProgress = '';
+            $scope.viewAlbum($scope.notificationId);
+        });
+    }
+
+	$scope.notificationId = (window.location.search).split('=').pop();
+
+
+    // Video related functions start
+
+    $scope.addVideo = function(vidoeFolderName) {
+        var files = document.getElementById("videoupload").files;
+        if (!files.length) {
+            return alert("Please choose a file to upload first.");
+        }
+        var file = files[0];
+        var fileName = file.name;
+        var videoFolderKey = encodeURIComponent(vidoeFolderName) + "/videos/";
+
+        var videoKey = videoFolderKey + fileName;
+
+        // Use S3 ManagedUpload class as it supports multipart uploads
+        var upload = new AWS.S3.ManagedUpload({
+            params: {
+                Bucket: bucketName,
+                Key: videoKey,
+                Body: file,
+                ACL: "public-read"
+            }
+        });
+
+        $scope.videoUploadProgress = '0';
+
+        upload.on('httpUploadProgress', (event) => {
+          console.log(event.loaded * 100 / event.total);
+            $scope.$apply(function() {
+                $scope.videoUploadProgress = (event.loaded * 100 / event.total)+'%' ;
+            });
+        });
+
+        var promise = upload.promise();
+
+        promise.then(
+            function(data) {
+                alert("Successfully uploaded video.");
+                $scope.videoUploadProgress = '';
+                $scope.viewVideo($scope.notificationId);
+                //viewAlbum(albumName);
+            },
+            function(err) {
+                return alert("There was an error uploading your video: ", err.message);
+            }
+        );
+    }
+
+    $scope.viewVideo = function(videoFolderName) {
+        $scope.showVideoUploadOption = true;
+        console.log('view video called');
+        var videoFolderKey = encodeURIComponent(videoFolderName) + "/videos/";
+        s3.listObjects({
+            Prefix: videoFolderKey
+        }, function(err, data) {
+            if (err) {
+                return alert("There was an error viewing your folder: " + err.message);
+            }
+            // 'this' references the AWS.Response instance that represents the response
+            var href = this.request.httpRequest.endpoint.href;
+            var bucketUrl = href + bucketName + "/";
+            console.log('datat: ', data);
+
+            var videos = data.Contents.map(function(video) {
+                var videoKey = video.Key;
+                var videoUrl = bucketUrl + encodeURIComponent(videoKey);
+                return {
+                    'videoUrl': videoUrl,
+                    'videoKey': videoKey
+                };
+            });
+
+            $scope.$apply(function() {
+                $scope.videos = videos;
+                console.log('videos: ', $scope.videos);
+                if ($scope.videos.length) {
+                    $scope.showVideoUploadOption = false;
+                }
+            });
+
+
+        });
+    }
+
+    $scope.deleteVideo = function(videoFolderName, videoKey) {
+        //var photoKey = encodeURIComponent(albumName) + "//" + fileName;
+        s3.deleteObject({
+            Key: videoKey
+        }, function(err, data) {
+            if (err) {
+                return alert("There was an error deleting your video: ", err.message);
+            }
+            alert("Successfully deleted video.");
+            $scope.viewVideo(videoFolderName);
+        });
+    }
+
+    // Video related functions end
+
+    $scope.getTextEvidence = function(notificationId) {
+        $http({
+            method: "GET",
+            url: "https://lugr1lb26d.execute-api.ap-south-1.amazonaws.com/test/notification-evidence-text?" + "notificationId=" + notificationId
+        }).then(function mySuccess(response) {
+            $scope.evidenceText = response.data.evidenceText;
+            console.log(response.data);
+        }, function myError(response) {
+            alert('Error: ', response);
+        });
+    }
+
+	$scope.submitTextEvidence = function(evidenceText, notificationId) {
+        var data = {
+            "evidenceText": evidenceText
+        }
+        $http({
+            method: "PUT",
+            url: "https://lugr1lb26d.execute-api.ap-south-1.amazonaws.com/test/notification-evidence-text?" + "notificationId=" + notificationId,
+            data: JSON.stringify(data),
+            contentType: 'application/json'
+        }).then(function mySuccess(response) {
+            if (response.status == 204) {
+                window.alert('Text Evidence Uploaded Successfully!')
+                console.log("success");
+            }
+        }, function myError(response) {
+            console.log(response);
+        });
+    }
+});
+
+
+</script>
+</html>

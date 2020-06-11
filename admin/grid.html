@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<body>
+
+<div ng-app="myApp" ng-controller="myCtrl"> 
+
+<p>Today's welcome message is:</p>
+
+<h1>{{myWelcome}}</h1>
+
+</div>
+
+<p>The $http service requests a page on the server, and the response is set as the value of the "myWelcome" variable.</p>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope, $http) {
+
+var url_string = window.location.href;
+var url = new URL(url_string);
+var deviceid = url.searchParams.get("deviceid");
+var sensor = url.searchParams.get("sensor");
+var time = url.searchParams.get("time1");
+console.log(deviceid, sensor, time);
+
+// var video_url = "http://35.239.70.45/"+ deviceid + "/image_" + deviceid + "_"+ sensor + "_" + time +".mp4";
+
+   $http({
+      method: 'GET',
+      url: 'http://35.239.70.45/01/image_01_test_test01.mp4'
+   }).then(function (response){
+        console.log('success: ', response.status);
+   },function (error){
+        alert("error: ", error);
+        window.location.reload();
+   });
+
+});
+</script>
+
+</body>
+</html>

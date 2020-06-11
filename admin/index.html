@@ -1,0 +1,348 @@
+<html>
+   <head>
+      <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" type="image/png" href="logo.png">
+      <link rel="stylesheet" type="text/css" href="example.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js" ></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css" rel="stylesheet" type="text/css">
+      <link href="http://www.cssscript.com/wp-includes/css/sticky.css" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous" />
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+   </head>
+   <body ng-app="myApp" ng-controller="myCtrl">
+
+<div class="wrapper">
+         <!-- Sidebar  -->
+         <nav id="sidebar">
+            <div class="sidebar-header">
+               <img src="images/logo.png" style="width: 90%">
+               <strong>EBS</strong>
+            </div>
+            <ul class="list-unstyled components">
+               <li>
+                  <a>
+                  <i class="fas fa-home"></i>
+                  Home
+                  </a>
+               </li>
+               <li>
+                  <a ng-href="history.html" target="_blank">
+                  <i class="fas fa-clock"></i>
+                  History
+                  </a>
+               </li>
+            </ul>
+         </nav>
+
+        <!-- Escalate Modal -->
+        <div class="modal fade" id="escModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <!-- <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div> -->
+              <div class="modal-body">
+                Emergency situation has been escalated with the POLICE AUTHORITIES
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+         <!-- Add device Modal  -->
+         <div class="modal fade" id="addDeviceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+               <div class="modal-content">
+                  <div class="modal-header header-blue">
+                     <h5 class="modal-title" id="exampleModalLabel">
+                        Add Device
+                     </h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: white">&times;</span>
+                      </button>                    
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="form-group">
+                        <label for="exampleInputEmail1">Device ID</label>
+                        <input ng-model="deviceId" class="form-control">
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputPassword1">Client Name</label>
+                        <input ng-model="customerName" class="form-control">
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputPassword1">Emergency Mobile Numbers</label>
+                        <input ng-model="mobileNumbersString"class="form-control">
+                      </div>
+                      <div class="form-group">
+                        <label for="exampleInputPassword1">Enter Mode</label>
+                        <input ng-model="mode" class="form-control">
+                      </div>
+                      <button ng-click="postDevice(false)" class="btn btn-primary">Submit</button>
+                    </form>                  
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- Edit device Modal  -->
+         <div class="modal fade" id="editDeviceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="static"  data-keyboard="false">
+            <div class="modal-dialog modal-lg" role="document">
+               <div class="modal-content">
+                  <div class="modal-header header-blue">
+                     <h5 class="modal-title" id="exampleModalLabel">
+                        Device ID: {{editModalDevice.deviceId}}
+                     </h5>
+                      <button ng-click="getDevices()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: white">&times;</span>
+                      </button>                    
+                  </div>
+                  <div class="modal-body">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-md-6 pdng-10-24">
+                          <h5 style="margin-bottom: 18px">Device Details</h5>
+                          <form>
+                            <label for="exampleInputPassword1">Select Mode</label>
+                            <div class="input-group">
+                              <select ng-model="editModalDevice.mode" class="select-box form-control">
+                                <option ng-value="AUTO"
+                                        ng-selected="editModalDevice.mode == 'AUTO'">
+                                AUTO</option>
+
+                                <option ng-value="MANUAL"
+                                        ng-selected="editModalDevice.mode == 'MANUAL'">
+                                MANUAL</option>
+                              </select>
+                              <span class="input-group-btn">
+                                <button ng-click="publishMode(editModalDevice.deviceId, editModalDevice.mode)" class="btn btn-primary" type="button">Send!</button>
+                              </span>
+                            </div>
+
+
+                              <label for="exampleInputPassword1">Auto Mode Numbers</label>
+                              <div class="input-group">
+                                <input ng-model="editModalDevice.auto_num" type="text" class="form-control">
+                                <span class="input-group-btn">
+                                  <button ng-click="publishNumbers(editModalDevice.deviceId, editModalDevice.auto_num, 'auto')" class="btn btn-primary" type="button">Send!</button>
+                                </span>
+                              </div>
+
+                              <label for="exampleInputPassword1">Manual Mode Numbers</label>
+                              <div class="input-group">
+                                <input ng-model="editModalDevice.man_num" type="text" class="form-control">
+                                <span class="input-group-btn">
+                                  <button ng-click="publishNumbers(editModalDevice.deviceId, editModalDevice.man_num, 'manual')" class="btn btn-primary" type="button">Send!</button>
+                                </span>
+                              </div>
+
+                              <label for="exampleInputPassword1">Admin Numbers</label>
+                              <div class="input-group">
+                                <input ng-model="editModalDevice.admin_num" type="text" class="form-control">
+                                <span class="input-group-btn">
+                                  <button ng-click="publishNumbers(editModalDevice.deviceId, editModalDevice.admin_num, 'admin')" class="btn btn-primary" type="button">Send!</button>
+                                </span>
+                              </div>
+
+                            <label>Call Mode</label>
+                            <div class="input-group">
+                              <select ng-model="editModalDevice.call_mode" class="select-box form-control">
+                                <option ng-value="ON"
+                                        ng-selected='editModalDevice.call_mode == "ON"'>
+                                ON</option>
+
+                                <option ng-value="OFF"
+                                        ng-selected='editModalDevice.call_mode == "OFF"'>
+                                OFF</option>
+                              </select>
+                              <span class="input-group-btn">
+                                <button ng-click="publishCallMode(editModalDevice.deviceId, editModalDevice.call_mode)" class="btn btn-primary" type="button">Send!</button>
+                              </span>
+                            </div>
+
+                            <label>Message Mode</label>
+                            <div class="input-group">
+                              <select ng-model="editModalDevice.msg_mode" class="select-box form-control">
+                                <option ng-value="ON"
+                                        ng-selected='editModalDevice.msg_mode == "ON"'>
+                                ON</option>
+
+                                <option ng-value="OFF"
+                                        ng-selected='editModalDevice.msg_mode == "OFF"'>
+                                OFF</option>
+                              </select>
+                              <span class="input-group-btn">
+                                <button ng-click="publishMsgMode(editModalDevice.deviceId, editModalDevice.msg_mode)" class="btn btn-primary" type="button">Send!</button>
+                              </span>
+                            </div>
+
+                              <label for="exampleInputPassword1">Cameras</label>
+                              <div class="input-group">
+                                <input ng-model="editModalCameras" type="text" class="form-control">
+                                <span class="input-group-btn">
+                                  <button ng-click="editDeviceCameras(editModalDevice.deviceId)" class="btn btn-primary" type="button">Update</button>
+                                </span>
+                              </div>
+
+                              <div id="confirmation-msg" class="confirmation-msg"><i class="fas fa-check-circle"></i>&nbsp; Changes made successfully!</div>
+                              <div id="wait-msg" class="wait-msg"><i class="fas fa-hourglass-half"></i></i>&nbsp; Updating Settings......</div><br>
+
+                              <div id="last-reset" style="font-size: 10px">{{lastReset}}</div>
+                          </form>
+                        </div>
+                        <div class="col-md-6 pdng-10-24">
+                          <div>
+                            <div class="mb-3 d-flex justify-content-between align-items-center pointer" data-toggle="collapse" data-target="#collapseOne" ><h5 class="m-0" style="display: inline;">Control Panel</h5><i class="fa fa-chevron-down"></i></div>
+
+                            <div id="collapseOne" class="collapse">
+                              <button type="button" ng-click="playSiren(editModalDevice.deviceId, 'ON')" class="btn btn-outline-danger control-panel-btn"><i class="fa fa-bell"></i>&nbsp;Play Siren</button>
+                              <button type="button" ng-click="playSiren(editModalDevice.deviceId, 'OFF')" class="btn btn-outline-danger control-panel-btn"><i class="fa fa-bell"></i>&nbsp;Stop Siren</button>
+                              
+                            <button ng-click="openLiveFeedFromDialog()" type="button" class="btn btn-outline-primary control-panel-btn"><i class="fas fa-video"></i>&nbsp;View Live Feed</button>
+                            <button onclick=" window.open('http://ebs-track.s3-website.ap-south-1.amazonaws.com/','_blank')" type="button" class="btn btn-outline-primary control-panel-btn"><i class="fas fa-route"></i>&nbsp;Live Tracking</button>
+                              <!-- <button ng-click="captureScreenshot(editModalDevice.deviceId, 'noSensor', 'noTime', 'controlPanel')" type="button" class="btn btn-outline-primary control-panel-btn"><i class="fa fa-camera"></i>&nbsp;Take Screenshot</button> -->
+                            </div>
+
+
+
+                          </div><br>
+
+                          <div class="mb-3 d-flex justify-content-between align-items-center pointer" data-toggle="collapse" data-target="#collapseTwo" ><h5 class="m-0" style="display: inline;">Notifications</h5><i class="fa fa-chevron-down"></i></div>
+                          <div id="collapseTwo" class="collapse">
+                            <ul ng-if="notifications.length" class="list-group list-group-flush">
+                              <li ng-repeat="notification in notifications" class="list-group-item d-flex justify-content-between align-items-center">
+                                {{notification.sensor.sensor}}
+                                <span class="badge badge-primary badge-pill">{{timeConverter(notification.timestamp)}}</span>
+                              </li>
+                            </ul>
+                            <div ng-if="!notifications.length" class="light-grey-txt">
+                              All clear! Saavdhaan rahein, Sachait rahein 😎
+                            </div>
+                          </div><br>
+
+
+                          <div class="mb-3 d-flex justify-content-between align-items-center pointer" data-toggle="collapse" data-target="#collapseThree" ><h5 class="m-0" style="display: inline;">Additional Commands</h5><i class="fa fa-chevron-down"></i></div>
+                          <div id="collapseThree" class="collapse">
+                              <div class="radio-group">
+                                <label class="radio-inline">
+                                  <input ng-click="clearCmd()" ng-model="infoType" value="USSD"  type="radio" name="optradio" checked>USSD
+                                </label>
+
+                                <label class="radio-inline">
+                                  <input ng-click="clearCmd()" ng-model="infoType" value="CALL" type="radio" name="optradio">CALL
+                                </label>
+
+                                <label class="radio-inline">
+                                  <input ng-model="infoType" value="SIGNAL" type="radio" name="optradio" ng-click="clearCmd()">SIGNAL
+                                </label>
+
+                                <label class="radio-inline">
+                                  <input ng-model="infoType" value="OPERATOR" type="radio" name="optradio" ng-click="clearCmd()">OPERATOR
+                                </label>
+                                    <label class="radio-inline">
+                                    <input ng-model="infoType" value="imei" type="radio" name="optradio" ng-click="clearCmd()">IMEI
+                                    </label>
+                                    <label class="radio-inline">
+                                    <input ng-model="infoType" value="imsi" type="radio" name="optradio" ng-click="clearCmd()">IMSI
+                                    </label>
+                                    <label class="radio-inline">
+                                    <input ng-model="infoType" value="whitelist" type="radio" name="optradio" ng-click="clearCmd()">WHITELIST
+                                    </label>
+                              </div>
+                             
+                              <div class="input-group">
+                                <input ng-model="commandPayload" type="text" class="form-control" placeholder="Enter command......" id="myInput">
+                                <span class="input-group-btn">
+                                  <button ng-click="sendCmd(editModalDevice.deviceId, infoType)" class="btn btn-primary" type="button">Send!</button>
+                                </span>
+                              </div> 
+
+                              <div>Response: <span id="simResponse"></span></div>
+                          </div>
+                 
+                          
+                        </div>
+                      </div>
+                    </div>
+
+                    
+
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <!-- Page Content  -->
+         <div id="content">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+               <div class="container-fluid">
+                  <button ng-click="toggleSidebar()" type="button" id="sidebarCollapse" class="btn btn-primary">
+                  <i class="fas fa-align-left"></i>
+                  </button>
+               </div>
+            </nav>
+            <div class="row">
+              <div class="col-md-6">
+                <h3>Sachait Elecbits Monitoring Dashboard</h3><br>
+                  <table class="table table-hover">
+               <thead>
+                  <tr>
+                     <th scope="col" ng-click="orderByField='deviceId'; reverseSort = !reverseSort">Device ID</th>
+                     <th scope="col" ng-click="orderByField='mode[0]'; reverseSort = !reverseSort">Mode</th>
+                     <th scope="col" ng-click="orderByField='connected'; reverseSort = !reverseSort">Status</th>
+
+                     <!-- <th scope="col">Auto Num</th>
+                     <th scope="col">Manual Num</th> -->
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr ng-repeat="device in deviceArray | orderBy:orderByField:reverseSort" ng-click="openEditDeviceModal(device)">
+                     <th scope="row">{{device.deviceId}}</th>
+                     <td>{{device.mode[0]}}</td>
+                     <td ng-if="device.connected === 'true'"><span><i class="fa fa-circle" style="color: #00ff09"></i></span></td>
+                     <td ng-if="device.connected === 'false'"><span><i class="fa fa-circle" style="color: grey"></i></span></td>
+                  </tr>
+               </tbody>
+            </table><br>                
+              </div>
+              <div class="col-md-6">
+                <div class="no-notif-div" id="no-notif-div">
+                  <div onclick="window.open('http://ebs-admin.s3-website.ap-south-1.amazonaws.com/admin/secret.html', '_blank');"><i class="fas fa-bell"></i></div>
+                  <div>All Good!<br>No new notifications.</div>
+                </div>
+                <div class="notif-div" id="notif-div">
+                  <h3>Notifications!</h3>
+                  <div id="notificationDiv" class="notificationDiv"></div>
+                </div>
+              </div>
+            </div>
+            
+            
+         </div>
+         <button ng-click="openAddDeviceModal()" class="btn btn-circle btn-circle-lg m-1 pos-fix"><i class="fa fa-plus"></i></button>
+
+      </div>
+
+      <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" ></script>
+
+      <script src="aws-cognito-sdk.min.js"></script>
+      <script src="amazon-cognito-identity.min.js"></script>
+      <script src="cognito-auth.js"></script>
+      <script src="aws-iot-sdk-browser-bundle.js"></script>
+      <script src="bundle.js"></script>
+      <script src="date.js"></script>
+
+   </body>
+</html>
