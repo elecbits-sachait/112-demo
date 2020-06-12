@@ -263,7 +263,7 @@ $scope.addNotification = function(notif) {
   childNodes[1].onclick = function() {openLiveFeed(notif.deviceId)};
   childNodes[2].onclick = function() {playSirenJs(notif.deviceId, 'ON')};
   childNodes[3].onclick = function() {playSirenJs(notif.deviceId, 'OFF')};
-  childNodes[4].onclick = function() {sendMessagesJs()};
+  childNodes[4].onclick = function() {sendMessagesJs(notif.deviceId)};
   childNodes[5].onclick = function() {window.open('http://ebs-track.s3-website.ap-south-1.amazonaws.com','_blank');}
   childNodes[6].onclick = function() {window.open('uploadEvidence.html?notificationId='+ notif.deviceId + '_' + notif.time, '_blank')};
   childNodes[9].innerHTML = 'Live Preview!'; 
@@ -318,16 +318,21 @@ $scope.openLiveFeedFromDialog = function() {
 
     $scope.siren = 0;
 
-    $scope.playSiren = function(deviceId, mode) {
-     var sirenId = 'siren_' + deviceId;
+$scope.playSiren = function(deviceId, mode) {
+  if(deviceId == "003") {
+    var sirenId = 'siren_001';
+  } else {
+    var sirenId = 'siren_' + deviceId;
+  }
+  
 
-     $scope.payload = {
+   $scope.payload = {
          "state" : {
            "desired": {
              "mode" : [mode]
            }
          }
-      }
+   }
 
      console.log(JSON.stringify($scope.payload));
 
@@ -340,7 +345,7 @@ $scope.openLiveFeedFromDialog = function() {
 
      mqttClient.publish('$aws/things/' + sirenId + '/shadow/update',
                          JSON.stringify($scope.payload));
-    }
+}
 
 
 function playSirenJs(deviceId, mode) {
@@ -487,14 +492,38 @@ $scope.editDeviceCameras = function (deviceId) {
  
 }
 
-    function sendMessagesJs() {
-        fetch('http://api.textlocal.in/send/?apiKey=4KyJdpNUImc-IfWruKM8yEXi1MPtzN3DobwnNOiQzb&sender=TXTLCL&group_id=1037625&message=Emergency%20at%20device0002-http://ebs-admin.s3-website.ap-south-1.amazonaws.com/admin/cam.html').then(function(response) {
-            return response.json();
+    function sendMessagesJs(deviceId) {
+
+      function findParticularDevice(device) {
+        return device.deviceId == deviceId
+      }
+
+      $scope.particularDevice = $scope.deviceArray.find(findParticularDevice);
+
+      $scope.allNumbersStr = $scope.particularDevice.man_num.concat($scope.particularDevice.auto_num).toString();
+      $http({
+          method: "GET",
+          url: 'https://kjp1y833xk.execute-api.ap-south-1.amazonaws.com/test/device/'+ deviceId + '/camera'
+      }).then(function mySuccess(response) {
+          if(response.status == 200) {
+              var cameraString = (response.data).toString();
+              console.log('linkkkkk: ', 'http://35.222.21.172/sms/notify.php?deviceId='+deviceId+'&phone='+$scope.allNumbersStr+'&camID='+cameraString);
+              var link = 'http://35.222.21.172/sms/notify.php?deviceId='+deviceId+'&phone='+$scope.allNumbersStr+'&camID='+cameraString;
+              $scope.hitMessageLink(link);
+          }
+      }, function myError(response) {
+          console.log(response);
+      });
+    }
+
+    $scope.hitMessageLink = function(link) {
+        fetch(link).then(function(response) {
+            console.log(response);
         }).then(function(data) {
             alert('Messages Triggered Successfully! :D');
         }).catch(function() {
             console.log("Error in sending messages :(");
-        });
+        });      
     }
 
 
