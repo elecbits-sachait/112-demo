@@ -4,36 +4,71 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.689.0/aws-sdk.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 <head>
-	<title></title>
+    <title></title>
 </head>
 <body ng-app="myApp" ng-controller="myCtrl" ng-init="viewAlbum(notificationId); viewVideo(notificationId); getTextEvidence(notificationId)">
 	<div class="container text-center">
 		<h2>Upload Evidence</h3><br><br>
-		<div class="d-flex row justify-content-around">
+		<div class="d-flex row">
 			<div class="col-md-4">
-				<h4>Upload Image</h4><br>
+                <div class="card rounded border-primary">
+                <div class="card-body">
+				<h4 class="card-title">Upload Image</h4><br>
 					<div>
-                        <div >
-                            <div>Choose a file and click Upload</div><br>                  
+                        <div>
+                            <div class="card-subtitle text-muted">Choose a file and click Upload</div><br>                  
                             <input id="photoupload" type="file" accept="image/*"><br><br>
                             <button class="btn btn-outline-success" id="addphoto" ng-click="addPhoto(notificationId)">
                             Upload
                             </button>&nbsp;&nbsp;  {{uploadProgress}}                             
-                        </div> 
-
+                        </div> <br>
+                       
                         <div ng-repeat="photo in photos">
+                            <div class="card rounded border-primary" style="margin-bottom: 19px;">
+                                <div class="card-body">
                             <img width="55%" src="{{photo.photoUrl}}"><br><br>
                             <button class="btn btn-outline-danger" ng-click="deletePhoto(notificationId, photo.photoKey)">Delete Image</button>
                         </div>
                     </div>
-			</div><br><br>
-
-			<div class="col-md-4">
-				<h4>Upload Video</h4><br>
-						<div ng-if="showVideoUploadOption">
-                            <div>Choose a file and click Upload</div><br>    
+                    </div>
+                    </div>
+                    </div>
+			</div>
+            </div><br><br>
+            <div class="col-md-4">
+                <div class="card rounded border-primary">
+                <div class="card-body">
+				<h4 class="card-title">Upload Video</h4><br>
+					<div>
+                        <div>
+                            <div class="card-subtitle text-muted">Choose a file and click Upload</div><br>                  
                             <input id="videoupload" type="file" accept="video/mp4,video/x-m4v,video/*"><br><br>
                             <button class="btn btn-outline-success" id="addVideo" ng-click="addVideo(notificationId)">
+                            Upload
+                            </button>&nbsp;&nbsp;  {{videoUploadProgress}}                             
+                        </div> <br>
+                        
+                        <div ng-repeat="video in videos">
+                            <div class="card rounded border-primary"  style="margin-bottom: 19px;">
+                                <div class="card-body">
+                                    Current Video: {{video.videoKey.split('/').pop()}}<br><br>
+                            <button class="btn btn-outline-danger" style="margin-bottom: 19px;" ng-click="deleteVideo(notificationId, video.videoKey)">Delete Video</button>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
+                    </div>
+			</div>
+			</div>
+
+			<!-- <div class="col-md-4">
+                <div class="card rounded border-primary">
+                    <div class="card-body">
+				<h4  class="card-title">Upload Video</h4><br>
+						<div ng-if="showVideoUploadOption">
+                            <div class="card-subtitle text-muted">Choose a file and click Upload</div><br>    
+                            <input id="videoupload" type="file" accept="video/mp4,video/x-m4v,video/*"><br><br>
+                            <button class="btn btn-outline-primary" id="addVideo" ng-click="addVideo(notificationId)">
                             Upload
                             </button>  &nbsp;&nbsp;{{videoUploadProgress}}                          
                         </div>
@@ -42,15 +77,21 @@
                             Current Video: {{video.videoKey.split('/').pop()}}<br><br>
                             <button class="btn btn-outline-danger" ng-click="deleteVideo(notificationId, video.videoKey)">Delete Video</button>
                         </div>
-			</div><br><br>
+                        </div>
+                        </div>
+			</div><br><br> -->
 
 			<div class="col-md-4">
-				<h4>Upload Text</h4><br>
+                <div class="card rounded border-primary">
+                    <div class="card-body">
+				<h4  class="card-title">Upload Text</h4><br>
 				<div>
-					<textarea ng-model="evidenceText" rows="6" style="width: 100%" placeholder="Submit relevant data like appearance/model/number of vehicle used or direction they have headed towards or appearance of accused persons"></textarea><br>
-					<button class="btn btn-outline-success" ng-click="submitTextEvidence(evidenceText, notificationId)">Upload</button>
+					<textarea ng-model="evidenceText" rows="4" style="width: 100%" placeholder="Submit relevant data like appearance/model/number of vehicle used or direction they have headed towards or appearance of accused persons"></textarea><br>
+					<button class="btn btn-outline-primary" ng-click="submitTextEvidence(evidenceText, notificationId)">Upload</button>
 				</div>
-			</div>		
+            </div>		
+        </div>
+    </div>
 		</div>
 	</div>
 hi there
